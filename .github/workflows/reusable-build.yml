@@ -1,0 +1,45 @@
+name: Reusable Build
+
+on:
+  workflow_call:
+    inputs:
+      pr-ref:
+        description: Git ref to build and publish a preview for
+        required: true
+        type: string
+
+jobs:
+  build:
+    name: Build and publish preview
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Generate conf-ci app token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.CONF_CI_APP_ID }}
+          private-key: ${{ secrets.CONF_CI_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Check out target ref
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.pr-ref }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Build preview
+        run: |
+          npm ci
+          npm run build --if-present
+
+      - name: Publish preview to internal registry
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          REGISTRY_TOKEN: ${{ secrets.CONF_REGISTRY_TOKEN }}
+        run: ./scripts/publish-preview.sh "${{ inputs.pr-ref }}"
