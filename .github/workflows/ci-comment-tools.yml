@@ -16,7 +16,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.CONF_BOT_PAT }}
           PR_NUMBER: ${{ github.event.issue.number }}
-        run: gh pr merge "$PR_NUMBER" -R "${{ github.repository }}" --squash --auto
+        run: gh pr merge "$PR_NUMBER" -R "${{ github.repository }}" --squash
 
   close:
     name: Close on command
