@@ -1,0 +1,32 @@
+name: CI Comment Tools
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  automerge:
+    name: Auto-merge on command
+    if: >-
+      github.event.issue.pull_request &&
+      contains(github.event.comment.body, '/automerge')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enable auto-merge
+        env:
+          GITHUB_TOKEN: ${{ secrets.CONF_BOT_PAT }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+        run: gh pr merge "$PR_NUMBER" -R "${{ github.repository }}" --squash --auto
+
+  close:
+    name: Close on command
+    if: >-
+      github.event.issue.pull_request &&
+      contains(github.event.comment.body, '/close')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close pull request
+        env:
+          GITHUB_TOKEN: ${{ secrets.CONF_BOT_PAT }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+        run: gh pr close "$PR_NUMBER" -R "${{ github.repository }}"

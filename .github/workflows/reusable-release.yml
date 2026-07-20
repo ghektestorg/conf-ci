@@ -1,0 +1,47 @@
+name: Reusable Release
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: Target deployment environment
+        required: true
+        type: string
+    secrets:
+      DEPLOY_TOKEN:
+        required: false
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  release:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out caller repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::605041003217:role/conf-github-deploy
+          aws-region: us-east-1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Build
+        run: |
+          npm ci
+          npm run build --if-present
+
+      - name: Publish and deploy
+        env:
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+        run: |
+          echo "Deploying build to ${{ inputs.environment }}"
+          npm run deploy --if-present
