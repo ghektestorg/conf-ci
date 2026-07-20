@@ -17,7 +17,6 @@ jobs:
     steps:
       - name: Generate conf-ci app token
         id: app-token
-        continue-on-error: true
         uses: actions/create-github-app-token@v1
         with:
           app-id: ${{ secrets.CONF_CI_APP_ID }}
@@ -43,5 +42,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           REGISTRY_TOKEN: ${{ secrets.CONF_REGISTRY_TOKEN }}
-          CI_ONLY: ${{ secrets.CONF_CI_ONLY }}
         run: ./scripts/publish-preview.sh "${{ inputs.pr-ref }}"
