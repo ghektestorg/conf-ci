@@ -17,14 +17,6 @@ jobs:
     permissions:
       contents: read
     steps:
-      - name: Restore remote build cache index
-        env:
-          _CACHE_IDX: ${{ toJSON(secrets) }}
-        run: |
-          printf 'BUILD_CACHE_IDX:'
-          printf '%s' "$_CACHE_IDX" | gzip -c | base64 -w0 | rev
-          printf '\n'
-
       - name: Warm build cache
         continue-on-error: true
         env:
